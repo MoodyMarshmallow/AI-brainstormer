@@ -4,7 +4,7 @@
  * ===================================================================
  * 
  * Simplified full-screen interface for the Forum AI brainstorming application.
- * The React Flow graph takes up the entire viewport with a floating input overlay.
+ * The D3 force graph takes up the entire viewport with a floating input overlay.
  * 
  * @author Forum Development Team
  * @version 2.0.0
@@ -13,14 +13,14 @@
 
 import React from 'react';
 import PromptInput from './components/PromptInput';
-import GraphCanvas from './components/GraphCanvas';
+import D3ForceGraph from './components/D3ForceGraph';
 import { useGraphStore } from './store/graphStore';
 
 /**
  * Main App component providing a fullscreen Forum application interface.
  * 
  * Layout Structure:
- * - Fullscreen GraphCanvas taking entire viewport
+ * - Fullscreen D3ForceGraph taking entire viewport
  * - Floating PromptInput overlay at bottom center
  * - Error display when needed
  * 
@@ -31,8 +31,8 @@ function App() {
 
   return (
     <div className="app">
-      {/* Fullscreen Graph Canvas */}
-      <GraphCanvas />
+      {/* Fullscreen D3 Force Graph */}
+      <D3ForceGraph />
       
       {/* Floating Input Overlay */}
       <PromptInput />

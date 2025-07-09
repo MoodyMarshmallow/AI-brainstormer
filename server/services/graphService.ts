@@ -15,23 +15,24 @@
  * Key Features:
  * - Session creation with initial personality responses
  * - Graph expansion through branching conversations
- * - Intelligent node positioning to prevent overlap
+ * - D3 force simulation positioning (client-side)
+ * - Dynamic positioning for optimal graph organization
  * - In-memory session storage for MVP deployment
  * - Session statistics and monitoring
  * 
  * Graph Structure:
  * - Root nodes: User-submitted prompts
- * - Response nodes: AI personality responses (Optimist, Pessimist, Realist)
+ * - Response nodes: AI personality responses
  * - Directed edges: Show conversation flow and relationships
- * - Triangle formation: Initial responses positioned to avoid overlap
- * - Horizontal expansion: Branched conversations spread horizontally
+ * - D3 force simulation: Automatic physics-based positioning
+ * - Dynamic expansion: New branches integrate naturally
  * 
  * Dependencies:
  * - UUID for unique node/edge/session identifiers
  * - Shared types for consistent data structures
  * 
  * @author Forum Development Team
- * @version 1.0.0
+ * @version 2.0.0
  * @since 2024
  */
 
@@ -57,79 +58,33 @@ const sessions = new Map<string, Session>();
 
 /**
  * Creates a new conversation session with initial personality responses.
- * This is the primary function called when a user submits a new topic
- * for exploration by the AI personalities.
- * 
- * Graph Structure Created:
- * - 1 root prompt node (centered)
- * - 3 personality response nodes (triangle formation)
- * - 3 edges connecting prompt to responses
- * 
- * Positioning Strategy:
- * - Root node: Center of canvas (400, 100)
- * - Optimist: Top right (650, 50)
- * - Pessimist: Bottom right (650, 300)
- * - Realist: Left (150, 175)
- * - Fallback: Circular arrangement for additional responses
+ * Nodes are created without positioning - D3 force simulation handles layout.
  * 
  * @param {string} prompt - The user's original topic or question
  * @param {PersonalityResponse[]} personalityResponses - Array of AI personality responses
- * @returns {Session} Complete session object with nodes, edges, and metadata
- * 
- * @example
- * const session = createSession("Starting a tech startup", [
- *   { persona: 'optimist', text: "Great opportunity...", color: 'green' },
- *   { persona: 'pessimist', text: "Consider the risks...", color: 'red' },
- *   { persona: 'realist', text: "Balanced approach...", color: 'grey' }
- * ]);
+ * @returns {Session} Complete session object with nodes and edges
  */
 export const createSession = (prompt: string, personalityResponses: PersonalityResponse[]): Session => {
   const sessionId = uuidv4();
   
-  // Create root prompt node (centered)
+  // Create root prompt node (no position - D3 will handle this)
   const rootNode: Node = {
     id: uuidv4(),
     text: prompt,
     type: 'prompt',
-    position: { x: 400, y: 100 }
+    position: { x: 0, y: 0 } // Initial position, D3 will override
   };
   
-  // Create personality response nodes with improved positioning
-  // Use fixed positions for the three personalities to ensure no overlap
-  const responseNodes: Node[] = personalityResponses.map((response, index) => {
-    let x: number, y: number;
-    
-    // Fixed positions for the 3 personalities (triangle formation)
-    switch (index) {
-      case 0: // Optimist - top right
-        x = 650;
-        y = 50;
-        break;
-      case 1: // Pessimist - bottom right  
-        x = 650;
-        y = 300;
-        break;
-      case 2: // Realist - left
-        x = 150;
-        y = 175;
-        break;
-      default: // Fallback for any additional responses
-        const angle = (index * 2 * Math.PI) / personalityResponses.length;
-        const radius = 300;
-        x = 400 + radius * Math.cos(angle);
-        y = 250 + radius * Math.sin(angle);
-    }
-    
-    return {
-      id: uuidv4(),
-      text: response.text,
-      parentId: rootNode.id,
-      type: 'response',
-      position: { x, y },
-      persona: response.persona,
-      color: response.color
-    };
-  });
+  // Create personality response nodes (no position - D3 will handle this)
+  const responseNodes: Node[] = personalityResponses.map((response) => ({
+    id: uuidv4(),
+    text: response.text,
+    parentId: rootNode.id,
+    type: 'response',
+    position: { x: 0, y: 0 }, // Initial position, D3 will override
+    persona: response.persona,
+    color: response.color
+  }));
   
   // Create edges connecting prompt to personality responses
   const edges: Edge[] = responseNodes.map(node => ({
@@ -146,7 +101,7 @@ export const createSession = (prompt: string, personalityResponses: PersonalityR
   };
   
   sessions.set(sessionId, session);
-  console.info(`✅ Created Forum session ${sessionId} with ${personalityResponses.length} personality responses`);
+  console.info(`✅ Created Forum session ${sessionId} with D3 force simulation layout for ${personalityResponses.length} personality responses`);
   return session;
 };
 
@@ -156,35 +111,13 @@ export const createSession = (prompt: string, personalityResponses: PersonalityR
 
 /**
  * Adds a new conversation branch to an existing session.
- * This function enables users to explore deeper into any personality's
- * response by generating follow-up responses from all three personalities.
- * 
- * Branching Process:
- * 1. Validates session and parent node existence
- * 2. Creates optional follow-up prompt node
- * 3. Generates new personality response nodes
- * 4. Positions new nodes to avoid overlap
- * 5. Creates edges to connect new nodes
- * 6. Updates session with new graph elements
- * 
- * Positioning Strategy:
- * - Follow-up prompt: Offset from parent (x+150, y+200)
- * - Personality responses: Horizontal spread below anchor
- * - Optimist: Left (-300 from anchor)
- * - Pessimist: Center (at anchor x)
- * - Realist: Right (+300 from anchor)
+ * D3 force simulation handles optimal positioning automatically.
  * 
  * @param {string} sessionId - The ID of the session to expand
  * @param {string} parentNodeId - The node to branch from
  * @param {PersonalityResponse[]} personalityResponses - New personality responses
  * @param {string} [followUpPrompt] - Optional follow-up question
  * @returns {{newNodes: Node[], newEdges: Edge[]}} New graph elements added
- * 
- * @throws {Error} If session or parent node not found
- * 
- * @example
- * const branch = addBranch("session-123", "node-456", personalityResponses, "What about funding?");
- * // Returns: { newNodes: [...], newEdges: [...] }
  */
 export const addBranch = (sessionId: string, parentNodeId: string, personalityResponses: PersonalityResponse[], followUpPrompt?: string): { newNodes: Node[], newEdges: Edge[] } => {
   const session = sessions.get(sessionId);
@@ -207,51 +140,22 @@ export const addBranch = (sessionId: string, parentNodeId: string, personalityRe
       text: followUpPrompt,
       parentId: parentNodeId,
       type: 'prompt',
-      position: { 
-        x: parentNode.position.x + 150, 
-        y: parentNode.position.y + 200 
-      }
+      position: { x: 0, y: 0 } // D3 will handle positioning
     };
     newNodes.push(promptNode);
   }
   
-  // Create personality response nodes with better spacing
+  // Create personality response nodes
   const anchorNode = promptNode || parentNode;
-  const personalityNodes: Node[] = personalityResponses.map((response, index) => {
-    // Use horizontal spacing for branches to avoid overlap
-    const baseX = anchorNode.position.x;
-    const baseY = anchorNode.position.y + 250;
-    
-    let x: number, y: number;
-    
-    switch (index) {
-      case 0: // Optimist - left
-        x = baseX - 300;
-        y = baseY;
-        break;
-      case 1: // Pessimist - center
-        x = baseX;
-        y = baseY;
-        break;
-      case 2: // Realist - right
-        x = baseX + 300;
-        y = baseY;
-        break;
-      default: // Fallback
-        x = baseX + (index - 1) * 200;
-        y = baseY;
-    }
-    
-    return {
-      id: uuidv4(),
-      text: response.text,
-      parentId: anchorNode.id,
-      type: 'response',
-      position: { x, y },
-      persona: response.persona,
-      color: response.color
-    };
-  });
+  const personalityNodes: Node[] = personalityResponses.map((response) => ({
+    id: uuidv4(),
+    text: response.text,
+    parentId: anchorNode.id,
+    type: 'response',
+    position: { x: 0, y: 0 }, // D3 will handle positioning
+    persona: response.persona,
+    color: response.color
+  }));
   
   newNodes.push(...personalityNodes);
   
@@ -276,11 +180,13 @@ export const addBranch = (sessionId: string, parentNodeId: string, personalityRe
     });
   });
   
-  // Update session
+  // Add new nodes and edges to session
   session.nodes.push(...newNodes);
   session.edges.push(...newEdges);
   
-  console.info(`✅ Added branch to session ${sessionId}: ${newNodes.length} nodes, ${newEdges.length} edges`);
+  sessions.set(sessionId, session);
+  
+  console.info(`✅ Added branch to session ${sessionId} with D3 force simulation: ${newNodes.length} nodes, ${newEdges.length} edges`);
   return { newNodes, newEdges };
 };
 

@@ -49,7 +49,6 @@ import {
   Background,
   useNodesState,
   useEdgesState,
-  addEdge,
   Node,
   Edge,
 } from '@xyflow/react';
@@ -112,7 +111,10 @@ const convertToReactFlowNodes = (nodes: GraphNode[]): Node[] => {
         label: nodeLabel,
         persona: node.persona,
         isPrompt: isPrompt
-      }
+      },
+      draggable: true,
+      selectable: true,
+      focusable: true,
     };
   });
 };
@@ -121,16 +123,18 @@ const convertToReactFlowNodes = (nodes: GraphNode[]): Node[] => {
  * Converts internal graph edges to React Flow edges with enhanced styling.
  * 
  * This function transforms the application's edge data structure into
- * React Flow compatible edges with visual enhancements for better UX.
+ * React Flow compatible edges with visual enhancements optimized for
+ * radial layouts and draggable nodes.
  * 
  * Edge Features:
- * - Smooth step connections for organic flow
- * - Animated dashed lines for visual interest
+ * - Bezier curves for natural flow in radial layouts
+ * - Subtle animation for visual interest
  * - Consistent color and stroke width
- * - Proper source/target relationships
+ * - Read-only edges (no manual connections allowed)
+ * - Optimized for viewing conversation relationships
  * 
  * @param {GraphEdge[]} edges - Array of internal graph edges
- * @returns {Edge[]} Array of React Flow compatible edges
+ * @returns {Edge[]} Array of React Flow compatible edges (read-only)
  */
 const convertToReactFlowEdges = (edges: GraphEdge[]): Edge[] => {
   return edges.map(edge => ({
@@ -140,10 +144,13 @@ const convertToReactFlowEdges = (edges: GraphEdge[]): Edge[] => {
     style: { 
       stroke: '#94a3b8', 
       strokeWidth: 2,
-      strokeDasharray: '5,5'
+      strokeOpacity: 0.7
     },
-    type: 'smoothstep',
+    type: 'default', // Use default bezier curves for better radial layout
     animated: true,
+    focusable: false, // Disable edge selection
+    selectable: false, // Disable edge selection completely
+    interactionWidth: 20, // Wider interaction area for easier selection
   }));
 };
 
@@ -161,16 +168,17 @@ const convertToReactFlowEdges = (edges: GraphEdge[]): Edge[] => {
  * Component Features:
  * - Real-time graph updates from Zustand store
  * - Click-to-expand personality responses
+ * - Draggable nodes for manual positioning
  * - Loading overlay during async operations
- * - Error banner with dismiss functionality
  * - Empty state with personality introductions
  * - Minimap and controls for navigation
  * 
  * User Interactions:
  * - Click on personality nodes to expand conversations
+ * - Drag nodes to reposition them manually
  * - Use controls for zooming and panning
- * - Dismiss errors with close button
  * - Navigate using minimap
+ * - No manual edge connections allowed
  * 
  * @returns {JSX.Element} The complete graph canvas interface
  */
@@ -188,17 +196,6 @@ export const GraphCanvas: React.FC = () => {
 
   const [nodes, setNodesState, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdgesState, onEdgesChange] = useEdgesState<Edge>([]);
-
-  /**
-   * Handles new edge connections between nodes.
-   * Currently allows manual edge creation for advanced users.
-   * 
-   * @param {any} params - Connection parameters from React Flow
-   */
-  const onConnect = useCallback(
-    (params: any) => setEdgesState((eds) => addEdge(params, eds)),
-    [setEdgesState],
-  );
 
   /**
    * Updates React Flow nodes and edges when graph state changes.
@@ -347,16 +344,65 @@ export const GraphCanvas: React.FC = () => {
         edges={edges}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
+        fitViewOptions={{
+          padding: 50, // Add padding around the graph
+          includeHiddenNodes: false,
+          minZoom: 0.1,
+          maxZoom: 2
+        }}
         attributionPosition="bottom-right"
         style={{ width: '100%', height: '100%' }}
+        defaultViewport={{ x: 0, y: 0, zoom: 0.8 }} // Start with a slight zoom out for better radial view
+        minZoom={0.1}
+        maxZoom={2}
+        snapToGrid={false} // Disable grid snapping for smoother radial layout
+        snapGrid={[15, 15]}
+        nodesDraggable={true} // Enable node dragging globally
+        nodesConnectable={false} // Completely disable node connections
+        elementsSelectable={true} // Enable element selection
+        selectNodesOnDrag={false} // Don't select nodes when dragging
+        panOnDrag={true} // Enable panning when dragging empty space
+        panOnScroll={false} // Disable pan on scroll for better zoom control
+        zoomOnScroll={true} // Enable zoom with scroll
+        zoomOnPinch={true} // Enable pinch zoom on touch devices
+        zoomOnDoubleClick={false} // Disable double-click zoom to prevent interference with node clicks
+        preventScrolling={true} // Prevent page scrolling when interacting with the graph
+        deleteKeyCode={null} // Disable delete key for nodes/edges
+        multiSelectionKeyCode={null} // Disable multi-selection for simplicity
       >
-        <Background />
-        <Controls />
-        <MiniMap />
+        <Background 
+          gap={20} 
+          size={1} 
+          color="#e2e8f0"
+        />
+        <Controls 
+          showZoom={true}
+          showFitView={true}
+          showInteractive={false} // Hide interactive toggle for simplicity
+          position="bottom-left"
+        />
+        <MiniMap 
+          nodeColor={(node) => {
+            if (node.data?.isPrompt) return '#667eea';
+            switch (node.data?.persona) {
+              case 'optimist': return '#10b981';
+              case 'pessimist': return '#ef4444';
+              case 'realist': return '#6b7280';
+              default: return '#94a3b8';
+            }
+          }}
+          position="top-right"
+          nodeStrokeWidth={2}
+          nodeBorderRadius={8}
+          style={{
+            background: 'rgba(255, 255, 255, 0.9)',
+            border: '1px solid #e2e8f0',
+            borderRadius: '8px'
+          }}
+        />
       </ReactFlow>
     </div>
   );

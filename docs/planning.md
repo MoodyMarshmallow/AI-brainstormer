@@ -33,15 +33,16 @@ AI-brainstormer/
 
 ---
 
-## 3. Core Features & Flow
+## 3. Core Features & User Workflow
 
 1. **User Prompt** – User submits a brainstorming prompt in the UI.
 2. **API Request** – Front‑end posts the prompt to `/api/brainstorm`.
 3. **Manager‑Agent Stage** – Back‑end passes the prompt once to a *manager agent* (Gemini) that thinks of distinct "angles" (e.g., pro‑/con‑, metaphor, practical use‑case, moon‑shot idea). It returns a list of mini‑prompts, each describing a different approach.
 4. **Worker‑Agents Stage** – For each mini‑prompt, the back‑end fires an independent *worker agent* call (parallel) to Gemini to generate a detailed response.
-5. **Graph Construction** – Manager angles become first‑level child nodes; each worker response becomes a second‑level node beneath its angle, allowing clearer grouping in the mind‑map.
+5. **Graph Construction** – The worker agents each return a detailed response based on the prompt given to them by the manager agent. These responses are represented as child nodes of the user prompt.
 6. **Visualization** – Front‑end renders the interactive graph (zoom, pan, expand/collapse nodes).
-7. **Session Management** – Persist sessions in memory or a lightweight database; allow users to revisit and branch any node (which re‑runs Manager → Worker flow for that node).
+7. **Further Interation** — The user may click on one of the response nodes and enter a follow-up prompt. This 
+8. **Session Management** – Persist sessions in memory or a lightweight database; allow users to revisit and branch any node (which re‑runs Manager → Worker flow for that node).
 
 ---
 
