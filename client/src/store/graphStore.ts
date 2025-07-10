@@ -59,6 +59,9 @@ interface GraphState {
   /** UUID of the current session, null if no session is active */
   sessionId: string | null;
   
+  /** ID of the currently selected node, null if no node is selected */
+  selectedNodeId: string | null;
+  
   /** Boolean indicating if an async operation is in progress */
   isLoading: boolean;
   
@@ -105,6 +108,14 @@ interface GraphState {
   setError: (error: string | null) => void;
   
   /**
+   * Sets the currently selected node.
+   * Used to track which node is selected for follow-up prompts.
+   * 
+   * @param {string | null} nodeId - ID of the node to select, or null to clear selection
+   */
+  setSelectedNode: (nodeId: string | null) => void;
+  
+  /**
    * Clears all graph data and resets state.
    * Used when starting a new session or resetting the application.
    */
@@ -147,6 +158,7 @@ export const useGraphStore = create<GraphState>((set) => ({
   nodes: [],
   edges: [],
   sessionId: null,
+  selectedNodeId: null,
   isLoading: false,
   error: null,
   
@@ -200,6 +212,14 @@ export const useGraphStore = create<GraphState>((set) => ({
   setError: (error) => set({ error, isLoading: false }),
   
   /**
+   * Sets the currently selected node.
+   * Used to track which node is selected for follow-up prompts.
+   * 
+   * @param {string | null} nodeId - ID of the node to select, or null to clear selection
+   */
+  setSelectedNode: (nodeId) => set({ selectedNodeId: nodeId }),
+  
+  /**
    * Clears all graph data and resets state to initial values.
    * Used when starting a new session or resetting the application.
    */
@@ -207,6 +227,7 @@ export const useGraphStore = create<GraphState>((set) => ({
     nodes: [], 
     edges: [], 
     sessionId: null, 
+    selectedNodeId: null,
     error: null,
     isLoading: false 
   })

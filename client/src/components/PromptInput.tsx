@@ -29,16 +29,17 @@ import { brainstormApi } from '../services/api';
  */
 const PromptInput = () => {
   const [prompt, setPrompt] = useState('');
-  const { setGraph, setLoading, setError, isLoading } = useGraphStore();
+  const { setGraph, addNodes, selectedNodeId, sessionId, setSelectedNode, setLoading, setError, isLoading } = useGraphStore();
 
   /**
    * Handles form submission and Enter key presses.
+   * Supports both initial prompts and follow-up prompts.
    */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!prompt.trim()) {
-      setError('Please enter a topic to explore');
+      setError(selectedNodeId ? 'Please enter a follow-up question' : 'Please enter a topic to explore');
       return;
     }
 
@@ -46,14 +47,28 @@ const PromptInput = () => {
     setError(null);
 
     try {
-      console.info(`🎭 Starting Forum exploration for: "${prompt.trim()}"`);
-      const response = await brainstormApi.createSession(prompt.trim());
-      setGraph(response.nodes, response.edges, response.sessionId);
-      setPrompt(''); // Clear input after successful submission
-      console.info(`✅ Forum session created with ${response.nodes.length} nodes`);
+      if (selectedNodeId) {
+        // Handle follow-up prompt for selected node
+        if (!sessionId) {
+          throw new Error('No active session');
+        }
+        console.info(`🔗 Adding follow-up to selected node: "${prompt.trim()}"`);
+        const response = await brainstormApi.expandNode(sessionId, selectedNodeId, prompt.trim());
+        addNodes(response.newNodes, response.newEdges);
+        setSelectedNode(null); // Clear selection after follow-up
+        setPrompt(''); // Clear input after successful submission
+        console.info(`✅ Follow-up added with ${response.newNodes.length} new nodes`);
+      } else {
+        // Handle initial prompt
+        console.info(`🎭 Starting Forum exploration for: "${prompt.trim()}"`);
+        const response = await brainstormApi.createSession(prompt.trim());
+        setGraph(response.nodes, response.edges, response.sessionId);
+        setPrompt(''); // Clear input after successful submission
+        console.info(`✅ Forum session created with ${response.nodes.length} nodes`);
+      }
     } catch (error) {
-      console.error('Failed to create Forum session:', error);
-      setError('Failed to generate personality perspectives. Please try again.');
+      console.error('Failed to submit prompt:', error);
+      setError(selectedNodeId ? 'Failed to add follow-up. Please try again.' : 'Failed to generate personality perspectives. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -100,7 +115,7 @@ const PromptInput = () => {
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Enter any topic to explore with AI personalities..."
+            placeholder={selectedNodeId ? "Enter a follow-up question about the selected response..." : "Enter any topic to explore with AI personalities..."}
             style={{
               flex: '1',
               padding: '16px 20px',
@@ -163,7 +178,7 @@ const PromptInput = () => {
                 Exploring...
               </>
             ) : (
-              <>🎭 Explore</>
+              <>{selectedNodeId ? '🔗 Follow-up' : '🎭 Explore'}</>
             )}
           </button>
         </div>
@@ -176,7 +191,10 @@ const PromptInput = () => {
           color: '#64748b',
           opacity: 0.8
         }}>
-          Press Enter or click Explore • Get instant perspectives from Optimist, Pessimist & Realist
+          {selectedNodeId 
+            ? 'Press Enter or click Follow-up • Add a follow-up question to the selected response'
+            : 'Press Enter or click Explore • Get instant perspectives from Optimist, Pessimist & Realist'
+          }
         </div>
       </form>
       
