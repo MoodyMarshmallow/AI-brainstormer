@@ -49,13 +49,17 @@ import {
   Background,
   useNodesState,
   useEdgesState,
-  addEdge,
   Node,
   Edge,
+  useReactFlow,
+  Panel,
+  useStore,
 } from '@xyflow/react';
 import { useGraphStore } from '../store/graphStore';
 import { brainstormApi } from '../services/api';
 import { CustomNode } from './CustomNode';
+import { FloatingEdge } from './FloatingEdge';
+import { ContentOverlay } from './ContentOverlay';
 import type { Node as GraphNode, Edge as GraphEdge, PersonalityName } from '../../../shared/types';
 // import './GraphCanvas.css'; // REMOVED FOR TESTING
 
@@ -67,6 +71,10 @@ import '@xyflow/react/dist/style.css';
 
 const nodeTypes = {
   custom: CustomNode,
+};
+
+const edgeTypes = {
+  floating: FloatingEdge,
 };
 
 // ===================================================================
@@ -118,33 +126,41 @@ const convertToReactFlowNodes = (nodes: GraphNode[]): Node[] => {
 };
 
 /**
- * Converts internal graph edges to React Flow edges with enhanced styling.
+ * Converts internal graph edges to React Flow edges with floating edge styling.
  * 
  * This function transforms the application's edge data structure into
- * React Flow compatible edges with visual enhancements for better UX.
+ * React Flow compatible edges with floating edge calculations.
  * 
  * Edge Features:
- * - Smooth step connections for organic flow
- * - Animated dashed lines for visual interest
+ * - Floating edges that calculate optimal connection points
+ * - Clean lines without arrows
  * - Consistent color and stroke width
- * - Proper source/target relationships
+ * - Source and target node data for positioning calculations
  * 
  * @param {GraphEdge[]} edges - Array of internal graph edges
- * @returns {Edge[]} Array of React Flow compatible edges
+ * @param {Node[]} nodes - Array of React Flow nodes for data lookup
+ * @returns {Edge[]} Array of React Flow compatible floating edges
  */
-const convertToReactFlowEdges = (edges: GraphEdge[]): Edge[] => {
-  return edges.map(edge => ({
-    id: edge.id,
-    source: edge.source,
-    target: edge.target,
-    style: { 
-      stroke: '#94a3b8', 
-      strokeWidth: 2,
-      strokeDasharray: '5,5'
-    },
-    type: 'smoothstep',
-    animated: true,
-  }));
+const convertToReactFlowEdges = (edges: GraphEdge[], nodes: Node[]): Edge[] => {
+  return edges.map(edge => {
+    const sourceNode = nodes.find(n => n.id === edge.source);
+    const targetNode = nodes.find(n => n.id === edge.target);
+    
+    return {
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      type: 'floating',
+      style: { 
+        stroke: '#94a3b8', 
+        strokeWidth: 2,
+      },
+      data: {
+        sourceNode,
+        targetNode,
+      },
+    };
+  });
 };
 
 // ===================================================================
@@ -183,84 +199,83 @@ export const GraphCanvas: React.FC = () => {
     error,
     addNodes,
     setLoading,
-    setError
+    setError,
+    overlayNode,
+    isOverlayVisible,
+    showOverlay,
+    hideOverlay
   } = useGraphStore();
 
   const [nodes, setNodesState, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdgesState, onEdgesChange] = useEdgesState<Edge>([]);
+  const { getNodes } = useReactFlow();
 
   /**
-   * Handles new edge connections between nodes.
-   * Currently allows manual edge creation for advanced users.
-   * 
-   * @param {any} params - Connection parameters from React Flow
+   * Memoized conversion functions to prevent unnecessary recalculations
    */
-  const onConnect = useCallback(
-    (params: any) => setEdgesState((eds) => addEdge(params, eds)),
-    [setEdgesState],
+  const reactFlowNodes = React.useMemo(() => 
+    convertToReactFlowNodes(graphNodes), 
+    [graphNodes]
+  );
+
+  const reactFlowEdges = React.useMemo(() => 
+    convertToReactFlowEdges(graphEdges, reactFlowNodes), 
+    [graphEdges, reactFlowNodes]
   );
 
   /**
    * Updates React Flow nodes and edges when graph state changes.
-   * Ensures the visualization stays synchronized with the data store.
+   * Skip updates when overlay is visible to improve performance.
    */
   useEffect(() => {
-    const reactFlowNodes = convertToReactFlowNodes(graphNodes);
-    const reactFlowEdges = convertToReactFlowEdges(graphEdges);
+    // Skip expensive state updates when overlay is open
+    if (isOverlayVisible) return;
+    
     setNodesState(reactFlowNodes);
     setEdgesState(reactFlowEdges);
-  }, [graphNodes, graphEdges, setNodesState, setEdgesState]);
+  }, [reactFlowNodes, reactFlowEdges, setNodesState, setEdgesState, isOverlayVisible]);
 
   /**
-   * Handles node click events to expand personality responses.
+   * Updates floating edges when nodes change position
+   * Skip updates when overlay is visible to improve performance
+   */
+  useEffect(() => {
+    // Skip expensive edge calculations when overlay is open
+    if (isOverlayVisible) return;
+    
+    const currentNodes = getNodes();
+    if (currentNodes.length > 0 && graphEdges.length > 0) {
+      const updatedEdges = convertToReactFlowEdges(graphEdges, currentNodes);
+      setEdgesState(updatedEdges);
+    }
+  }, [nodes, graphEdges, getNodes, setEdgesState, isOverlayVisible]);
+
+  /**
+   * Handles node click events to show content overlay.
    * 
-   * This function manages the core interaction for exploring deeper
-   * into personality responses by generating new conversation branches.
+   * This function manages the core interaction for viewing detailed
+   * content of personality responses in an overlay format.
    * 
    * Click Behavior:
    * - Only personality response nodes are clickable
    * - Prompt nodes and loading states are ignored
-   * - Generates new responses from all three personalities
-   * - Updates the graph with new nodes and edges
-   * 
-   * Error Handling:
-   * - Validates session and node existence
-   * - Displays user-friendly error messages
-   * - Maintains loading states during async operations
+   * - Shows content overlay with full markdown-formatted text
+   * - Keeps prompt input visible for follow-up questions
    * 
    * @param {any} event - React Flow click event
    * @param {any} node - Clicked node object
    */
-  const onNodeClick = useCallback(async (event: any, node: any) => {
+  const onNodeClick = React.useCallback((event: any, node: any) => {
     // Only allow clicking on personality response nodes (not prompt nodes)
-    if (node.data.isPrompt || isLoading) return;
+    if (node.data.isPrompt || isLoading || isOverlayVisible) return;
 
-    // Find the original graph node to get personality info
+    // Find the original graph node to get full content
     const originalNode = graphNodes.find(n => n.id === node.id);
     if (!originalNode || !originalNode.persona) return;
 
-    console.info(`🎯 Expanding ${originalNode.persona} response:`, originalNode.text.substring(0, 100));
-
-    try {
-      setLoading(true);
-      setError(null);
-
-      if (!sessionId) {
-        throw new Error('No active session');
-      }
-
-      // Forum expansion always generates 3 personality responses
-      const response = await brainstormApi.expandNode(sessionId, node.id);
-      addNodes(response.newNodes, response.newEdges);
-      
-      console.info(`✅ Added ${response.newNodes.length} new nodes from personality expansion`);
-    } catch (err) {
-      console.error('❌ Failed to expand node:', err);
-      setError('Failed to expand idea. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, [sessionId, isLoading, graphNodes, addNodes, setLoading, setError]);
+    console.info(`👁️ Showing overlay for ${originalNode.persona} response`);
+    showOverlay(originalNode);
+  }, [isLoading, isOverlayVisible, graphNodes, showOverlay]);
 
   // ===================================================================
   // RENDER STATES
@@ -291,7 +306,7 @@ export const GraphCanvas: React.FC = () => {
           boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
         }}>
           <h3 style={{ marginBottom: '16px', color: '#334155', fontSize: '1.8rem', fontWeight: '700' }}>🎭 Forum</h3>
-          <p style={{ margin: '0 0 20px 0', fontSize: '1.1rem' }}>Enter a topic below to explore it through three distinct AI personalities</p>
+          <p style={{ margin: '0', fontSize: '1.1rem' }}>Ready for AI personality exploration</p>
         </div>
       </div>
     );
@@ -345,20 +360,75 @@ export const GraphCanvas: React.FC = () => {
       <ReactFlow
         nodes={nodes}
         edges={edges}
-        onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onConnect={onConnect}
+        onNodesChange={isOverlayVisible ? undefined : onNodesChange}
+        onEdgesChange={isOverlayVisible ? undefined : onEdgesChange}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
+        nodesDraggable={!isOverlayVisible}
+        nodesConnectable={false}
+        elementsSelectable={!isOverlayVisible}
         fitView
         attributionPosition="bottom-right"
-        style={{ width: '100%', height: '100%' }}
+        style={{ 
+          width: '100%', 
+          height: '100%',
+          pointerEvents: isOverlayVisible ? 'none' : 'auto'
+        }}
       >
-        <Background />
-        <Controls />
-        <MiniMap />
+        {!isOverlayVisible && <Background />}
+        {!isOverlayVisible && <Controls />}
+        {!isOverlayVisible && (
+          <MiniMap 
+            position="top-right"
+            nodeColor={(node: Node) => {
+              const nodeData = node.data as any;
+              if (nodeData.isPrompt) {
+                return '#667eea'; // Indigo for prompt nodes
+              }
+              
+              switch (nodeData.persona) {
+                case 'optimist':
+                  return '#10b981'; // Emerald green for optimist
+                case 'pessimist':
+                  return '#ef4444'; // Red for pessimist
+                case 'realist':
+                  return '#6b7280'; // Gray for realist
+                default:
+                  return '#e5e7eb'; // Light gray default
+              }
+            }}
+            style={{
+              border: '1px solid #e5e7eb',
+              borderRadius: '8px',
+              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              background: 'white'
+            }}
+            pannable={true}
+            zoomable={true}
+          />
+        )}
+        <ViewportLogger />
       </ReactFlow>
+      
+      {/* Content Overlay */}
+      {isOverlayVisible && overlayNode && (
+        <ContentOverlay
+          node={overlayNode}
+          onClose={hideOverlay}
+        />
+      )}
     </div>
+  );
+};
+
+// Add the component at the bottom
+const ViewportLogger = () => {
+  const [x, y, zoom] = useStore((state) => state.transform);
+  return (
+    <Panel position="top-left">
+      x: {x.toFixed(2)}, y: {y.toFixed(2)}, zoom: {zoom.toFixed(2)}
+    </Panel>
   );
 };
 

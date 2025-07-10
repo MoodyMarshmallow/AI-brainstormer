@@ -12,6 +12,7 @@
  */
 
 import React from 'react';
+import { ReactFlowProvider } from '@xyflow/react';
 import PromptInput from './components/PromptInput';
 import GraphCanvas from './components/GraphCanvas';
 import { useGraphStore } from './store/graphStore';
@@ -31,8 +32,11 @@ function App() {
 
   return (
     <div className="app">
-      {/* Fullscreen Graph Canvas */}
-      <GraphCanvas />
+      {/* ReactFlow Provider for context */}
+      <ReactFlowProvider>
+        {/* Fullscreen Graph Canvas */}
+        <GraphCanvas />
+      </ReactFlowProvider>
       
       {/* Floating Input Overlay */}
       <PromptInput />

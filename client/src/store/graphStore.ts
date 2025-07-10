@@ -65,6 +65,12 @@ interface GraphState {
   /** Error message string, null if no error occurred */
   error: string | null;
 
+  /** Node content overlay state */
+  overlayNode: Node | null;
+  
+  /** Boolean indicating if overlay is visible */
+  isOverlayVisible: boolean;
+
   // ===================================================================
   // STATE ACTIONS
   // ===================================================================
@@ -109,6 +115,18 @@ interface GraphState {
    * Used when starting a new session or resetting the application.
    */
   clearGraph: () => void;
+
+  /**
+   * Shows the content overlay for a specific node.
+   * 
+   * @param {Node} node - The node to display in the overlay
+   */
+  showOverlay: (node: Node) => void;
+
+  /**
+   * Hides the content overlay.
+   */
+  hideOverlay: () => void;
 }
 
 // ===================================================================
@@ -125,10 +143,11 @@ interface GraphState {
  * - Incremental graph updates for performance
  * - Session persistence support
  * - Loading state management
+ * - Content overlay management
  * 
  * @example
  * // In a React component
- * const { nodes, edges, setGraph, addNodes, setLoading } = useGraphStore();
+ * const { nodes, edges, setGraph, addNodes, setLoading, showOverlay } = useGraphStore();
  * 
  * // Set initial graph
  * setGraph(initialNodes, initialEdges, sessionId);
@@ -138,6 +157,9 @@ interface GraphState {
  * 
  * // Show loading state
  * setLoading(true);
+ * 
+ * // Show content overlay
+ * showOverlay(selectedNode);
  */
 export const useGraphStore = create<GraphState>((set) => ({
   // ===================================================================
@@ -149,6 +171,8 @@ export const useGraphStore = create<GraphState>((set) => ({
   sessionId: null,
   isLoading: false,
   error: null,
+  overlayNode: null,
+  isOverlayVisible: false,
   
   // ===================================================================
   // STATE ACTIONS IMPLEMENTATION
@@ -207,7 +231,26 @@ export const useGraphStore = create<GraphState>((set) => ({
     nodes: [], 
     edges: [], 
     sessionId: null, 
-    error: null,
-    isLoading: false 
-  })
+    error: null, 
+    overlayNode: null, 
+    isOverlayVisible: false 
+  }),
+
+  /**
+   * Shows the content overlay for a specific node.
+   * 
+   * @param {Node} node - The node to display in the overlay
+   */
+  showOverlay: (node) => set({ 
+    overlayNode: node, 
+    isOverlayVisible: true 
+  }),
+
+  /**
+   * Hides the content overlay.
+   */
+  hideOverlay: () => set({ 
+    overlayNode: null, 
+    isOverlayVisible: false 
+  }),
 }));

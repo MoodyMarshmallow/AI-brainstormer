@@ -77,21 +77,37 @@ import { brainstormApi } from '../services/api';
  */
 const PromptInput = () => {
   const [prompt, setPrompt] = useState('');
-  const { setGraph, setLoading, setError, isLoading } = useGraphStore();
+  const { 
+    setGraph, 
+    setLoading, 
+    setError, 
+    isLoading,
+    addNodes,
+    sessionId,
+    overlayNode,
+    isOverlayVisible,
+    hideOverlay,
+    nodes
+  } = useGraphStore();
+
+  // Determine if input should be visible
+  // Show when: no nodes yet (initial state) OR overlay is visible (follow-up mode)
+  const shouldShow = nodes.length === 0 || isOverlayVisible;
 
   /**
-   * Handles form submission for topic exploration.
+   * Handles form submission for topic exploration or follow-up.
    * 
-   * This function manages the complete flow from user input to graph update,
-   * including validation, API calls, and state management.
+   * This function manages two different flows:
+   * 1. Initial session creation when no overlay is visible
+   * 2. Follow-up conversation when overlay is visible
    * 
    * Submission Process:
    * 1. Prevents default form submission
    * 2. Validates input for empty/whitespace-only content
-   * 3. Sets loading state and clears previous errors
-   * 4. Calls API to create new session with personalities
+   * 3. Determines if this is initial session or follow-up
+   * 4. Creates new session OR expands existing conversation
    * 5. Updates graph store with returned data
-   * 6. Clears input field on success
+   * 6. Clears input field and hides overlay on success
    * 7. Handles errors with user-friendly messages
    * 
    * Error Handling:
@@ -113,14 +129,28 @@ const PromptInput = () => {
     setError(null);
 
     try {
-      console.info(`🎭 Starting Forum exploration for: "${prompt.trim()}"`);
-      const response = await brainstormApi.createSession(prompt.trim());
-      setGraph(response.nodes, response.edges, response.sessionId);
+      if (isOverlayVisible && overlayNode && sessionId) {
+        // Follow-up mode: expand from the selected node
+        console.info(`🔄 Creating follow-up from ${overlayNode.persona} response: "${prompt.trim()}"`);
+        const response = await brainstormApi.expandNode(sessionId, overlayNode.id, prompt.trim());
+        addNodes(response.newNodes, response.newEdges);
+        hideOverlay(); // Close the overlay
+        console.info(`✅ Added ${response.newNodes.length} new nodes from follow-up`);
+      } else {
+        // Initial session mode
+        console.info(`🎭 Starting Forum exploration for: "${prompt.trim()}"`);
+        const response = await brainstormApi.createSession(prompt.trim());
+        setGraph(response.nodes, response.edges, response.sessionId);
+        console.info(`✅ Forum session created with ${response.nodes.length} nodes`);
+      }
       setPrompt(''); // Clear input after successful submission
-      console.info(`✅ Forum session created with ${response.nodes.length} nodes`);
     } catch (error) {
-      console.error('Failed to create Forum session:', error);
-      setError('Failed to generate personality perspectives. Please try again.');
+      console.error('Failed to process request:', error);
+      if (isOverlayVisible) {
+        setError('Failed to create follow-up. Please try again.');
+      } else {
+        setError('Failed to generate personality perspectives. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -128,39 +158,37 @@ const PromptInput = () => {
 
   return (
     <div style={{ 
+      position: 'fixed',
+      bottom: shouldShow ? '20px' : '-200px', // Slide down when hidden
+      left: '50%',
+      transform: 'translateX(-50%)',
+      zIndex: isOverlayVisible ? 2100 : 1000, // Higher z-index when overlay is visible
       padding: '20px', 
       maxWidth: '800px', 
-      margin: '0 auto', 
+      width: 'calc(100vw - 40px)', // Responsive width with margins
       background: 'white', 
       borderRadius: '12px', 
-      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)', 
-      marginBottom: '20px' 
+      boxShadow: '0 8px 32px rgba(0, 0, 0, 0.15)', 
+      backdropFilter: 'blur(10px)',
+      border: '1px solid rgba(255, 255, 255, 0.2)',
+      transition: 'bottom 0.6s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease', // Smooth sliding animation
+      // Enhanced shadow when overlay is visible
+      ...(isOverlayVisible && {
+        boxShadow: '0 12px 40px rgba(0, 0, 0, 0.25)'
+      })
     }}>
-      {/* Header Section */}
-      <div style={{ textAlign: 'center', marginBottom: '24px' }}>
-        <h1 style={{ 
-          fontSize: '2.5rem', 
-          fontWeight: 'bold', 
-          color: '#667eea', 
-          margin: '0 0 8px 0',
-          textShadow: '0 2px 4px rgba(102, 126, 234, 0.3)'
-        }}>🎭 Forum</h1>
-        <p style={{ 
-          fontSize: '1.1rem', 
-          color: '#64748b', 
-          margin: '0',
-          fontWeight: '500'
-        }}>Explore ideas through three distinct AI personalities</p>
-      </div>
-      
       {/* Input Form */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
+      <form onSubmit={handleSubmit}>
         <div style={{ display: 'flex', gap: '12px', alignItems: 'stretch' }}>
           <input
             type="text"
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Enter any topic to explore (e.g., 'Starting a sustainable business', 'Learning AI programming')"
+            placeholder={
+              isOverlayVisible 
+                ? `Ask a follow-up about this ${overlayNode?.persona || 'response'}...`
+                : "Enter any topic to explore (e.g., 'Starting a sustainable business', 'Learning AI programming')"
+            }
             style={{
               flex: '1',
               padding: '16px 20px',
@@ -206,63 +234,13 @@ const PromptInput = () => {
               }
             }}
           >
-            {isLoading ? '🎭 Generating Perspectives...' : '🎭 Explore Topic'}
+            {isLoading 
+              ? (isOverlayVisible ? '🔄 Creating Follow-up...' : '🎭 Generating Perspectives...') 
+              : (isOverlayVisible ? '🔄 Ask Follow-up' : '🎭 Explore Topic')
+            }
           </button>
         </div>
       </form>
-      
-      {/* Personality System Introduction */}
-      <div>
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', 
-          gap: '12px',
-          marginTop: '16px'
-        }}>
-          <span style={{ 
-            padding: '12px 16px', 
-            borderRadius: '10px', 
-            background: '#dcfce7', 
-            border: '1px solid #bbf7d0',
-            color: '#166534', 
-            fontSize: '14px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            🌟 <strong>Optimist</strong> - Highlights opportunities & best-case scenarios
-          </span>
-          <span style={{ 
-            padding: '12px 16px', 
-            borderRadius: '10px', 
-            background: '#fef2f2', 
-            border: '1px solid #fecaca',
-            color: '#dc2626', 
-            fontSize: '14px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            ⚠️ <strong>Pessimist</strong> - Identifies risks & potential challenges  
-          </span>
-          <span style={{ 
-            padding: '12px 16px', 
-            borderRadius: '10px', 
-            background: '#f3f4f6', 
-            border: '1px solid #d1d5db',
-            color: '#374151', 
-            fontSize: '14px',
-            fontWeight: '500',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            ⚖️ <strong>Realist</strong> - Provides balanced, practical perspective
-          </span>
-        </div>
-      </div>
     </div>
   );
 };
