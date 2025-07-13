@@ -87,8 +87,22 @@ export interface PersonalityResponse {
 // ===================================================================
 
 /**
- * Initializes the Google Generative AI client with API key from environment.
- * Handles configuration validation and error scenarios gracefully.
+ * Initializes the Google Generative AI client for personality response generation.
+ * 
+ * This function creates and configures the Google Generative AI client specifically
+ * for the personality service, using the GEMINI_API_KEY environment variable.
+ * It provides comprehensive logging and graceful fallback behavior.
+ * 
+ * Configuration Process:
+ * 1. Validates GEMINI_API_KEY environment variable existence
+ * 2. Logs API key configuration status with partial key for verification
+ * 3. Creates GoogleGenAI client instance with error handling
+ * 4. Returns null if configuration fails, triggering fallback responses
+ * 
+ * Security Features:
+ * - Only logs first 8 characters of API key for verification
+ * - Handles initialization errors without exposing sensitive data
+ * - Provides clear warnings when fallback mode is activated
  * 
  * @returns {GoogleGenAI | null} Initialized GenAI client or null if API key unavailable
  */

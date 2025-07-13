@@ -1,3 +1,47 @@
+/**
+ * ===================================================================
+ * PERSONALITY SERVICE TESTS - Forum AI Brainstorming Application
+ * ===================================================================
+ * 
+ * Comprehensive test suite for the Forum personality system that validates
+ * the three AI personalities (Optimist, Pessimist, Realist) and their
+ * response generation capabilities.
+ * 
+ * Test Coverage:
+ * - Basic functionality and response generation
+ * - Response quality and content validation
+ * - Personality trait analysis and consistency
+ * - Branching conversation support
+ * - Configuration validation
+ * - Error handling and edge cases
+ * 
+ * Personality Testing:
+ * - Optimist: Validates positive language and opportunity focus
+ * - Pessimist: Validates cautionary language and risk identification
+ * - Realist: Validates balanced language and practical approach
+ * 
+ * Test Environment:
+ * - Uses Jest testing framework with TypeScript
+ * - May use fallback responses if GEMINI_API_KEY not configured
+ * - Tests both AI-generated and fallback response scenarios
+ * - Validates personality characteristics through language analysis
+ * 
+ * Quality Assurance:
+ * - Response length validation (minimum 10 characters)
+ * - Personality consistency across different topics
+ * - Color coding validation for UI theming
+ * - System prompt configuration verification
+ * 
+ * Dependencies:
+ * - Jest testing framework
+ * - Personality service functions and types
+ * - Google Generative AI (optional for testing)
+ * 
+ * @author Forum Development Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import { describe, test, expect, beforeEach } from '@jest/globals';
 import { generatePersonalityResponses, generatePersonalityBranch, PERSONAS } from '../services/personalityService';
 import type { PersonalityResponse } from '../services/personalityService.js';

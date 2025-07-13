@@ -422,7 +422,20 @@ export const GraphCanvas: React.FC = () => {
   );
 };
 
-// Add the component at the bottom
+/**
+ * ViewportLogger component for displaying current viewport coordinates and zoom level.
+ * 
+ * This utility component provides real-time feedback about the current view state
+ * of the React Flow canvas, which is useful for debugging and development.
+ * 
+ * Features:
+ * - Displays current X, Y coordinates of the viewport
+ * - Shows current zoom level with 2 decimal precision
+ * - Positioned in top-left corner as an overlay panel
+ * - Updates in real-time as user pans and zooms
+ * 
+ * @returns {JSX.Element} Panel displaying viewport transform information
+ */
 const ViewportLogger = () => {
   const [x, y, zoom] = useStore((state) => state.transform);
   return (

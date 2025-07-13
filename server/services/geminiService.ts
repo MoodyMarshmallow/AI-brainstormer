@@ -37,7 +37,21 @@ import { GoogleGenAI } from '@google/genai';
 
 /**
  * Initializes the Google Generative AI client with API key from environment.
- * Handles configuration validation and error scenarios gracefully.
+ * 
+ * This function creates and configures the Google Generative AI client
+ * using the GEMINI_API_KEY environment variable. It provides graceful
+ * fallback behavior when the API key is not configured.
+ * 
+ * Configuration Process:
+ * 1. Checks for GEMINI_API_KEY environment variable
+ * 2. Logs API key status (without exposing the actual key)
+ * 3. Initializes GoogleGenAI client with proper error handling
+ * 4. Returns null if configuration fails or key is missing
+ * 
+ * Security Considerations:
+ * - Only logs partial API key for verification (first 8 characters)
+ * - Handles initialization errors gracefully
+ * - Warns when fallback responses will be used
  * 
  * @returns {GoogleGenAI | null} Initialized GenAI client or null if API key unavailable
  */

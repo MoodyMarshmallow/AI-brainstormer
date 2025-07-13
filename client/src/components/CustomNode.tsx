@@ -1,17 +1,101 @@
+/**
+ * ===================================================================
+ * CUSTOM NODE - Forum AI Brainstorming Application (Client)
+ * ===================================================================
+ * 
+ * This component provides a custom React Flow node for the Forum application.
+ * It renders both user prompts and AI personality responses with distinct
+ * styling and visual indicators for each personality type.
+ * 
+ * The CustomNode component handles the visual representation of conversation
+ * elements in the graph, providing personality-specific styling and
+ * interactive hover effects.
+ * 
+ * Key Features:
+ * - Personality-based color coding and styling
+ * - Visual distinction between prompts and responses
+ * - Personality indicator badges with emojis
+ * - Interactive hover effects with elevation
+ * - Responsive design with text truncation
+ * - Accessibility-friendly color contrast
+ * 
+ * Node Types:
+ * - Prompt nodes: Blue styling with "Topic" label
+ * - Response nodes: Color-coded by personality with badges
+ * 
+ * Personality Styling:
+ * - Optimist: Green theme with star emoji (🌟)
+ * - Pessimist: Red theme with warning emoji (⚠️)
+ * - Realist: Gray theme with balance emoji (⚖️)
+ * 
+ * Dependencies:
+ * - React Flow for node props and handle components
+ * - Shared types for personality definitions
+ * 
+ * @author Forum Development Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import React from 'react';
 import { NodeProps, Handle, Position } from '@xyflow/react';
 import type { PersonalityName } from '../../../shared/types';
 
+/**
+ * Interface defining the data structure for custom node props.
+ * Contains all information needed to render the node with appropriate styling.
+ */
 interface CustomNodeData {
+  /** The display text for the node (truncated if too long) */
   label: string;
+  
+  /** The AI personality that generated this node (undefined for prompts) */
   persona?: PersonalityName;
+  
+  /** Whether this node represents a user prompt (true) or AI response (false) */
   isPrompt?: boolean;
 }
 
+/**
+ * Custom React Flow node component for Forum conversation visualization.
+ * 
+ * This component renders nodes in the conversation graph with personality-specific
+ * styling and interactive features. It handles both user prompts and AI responses
+ * with distinct visual treatments.
+ * 
+ * Styling Features:
+ * - Personality-based color themes
+ * - Hover effects with elevation and scale
+ * - Personality indicator badges with emojis
+ * - Text truncation for readability
+ * - Responsive dimensions and padding
+ * 
+ * Node Types:
+ * - Prompt nodes: Clean blue styling with "Topic" label
+ * - Response nodes: Personality colors with uppercase persona labels
+ * 
+ * Accessibility:
+ * - High contrast color combinations
+ * - Clear visual hierarchy with labels
+ * - Keyboard navigation support through React Flow
+ * 
+ * @param {NodeProps} props - React Flow node props containing id and data
+ * @param {string} props.id - Unique identifier for the node
+ * @param {CustomNodeData} props.data - Node-specific data including label and persona
+ * @returns {JSX.Element} The rendered custom node with styling and handles
+ */
 export const CustomNode: React.FC<NodeProps> = ({ id, data }) => {
   const nodeData = data as unknown as CustomNodeData;
   const isPrompt = nodeData.isPrompt;
   
+  /**
+   * Determines the color scheme for the node based on its type and personality.
+   * 
+   * Returns appropriate colors for backgrounds, borders, and text based on
+   * whether the node is a prompt or which personality generated the response.
+   * 
+   * @returns {Object} Color scheme object with background, border, and text colors
+   */
   const getNodeColors = () => {
     if (isPrompt) {
       return {

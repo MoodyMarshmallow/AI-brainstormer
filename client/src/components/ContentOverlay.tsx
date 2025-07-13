@@ -1,14 +1,99 @@
+/**
+ * ===================================================================
+ * CONTENT OVERLAY - Forum AI Brainstorming Application (Client)
+ * ===================================================================
+ * 
+ * This component provides a full-screen overlay for displaying detailed
+ * content from conversation nodes in the Forum application. It renders
+ * AI personality responses with personality-specific styling and supports
+ * Markdown formatting for rich text display.
+ * 
+ * The ContentOverlay creates an immersive reading experience for exploring
+ * AI personality responses in detail, with the ability to ask follow-up
+ * questions directly from the overlay interface.
+ * 
+ * Key Features:
+ * - Full-screen modal overlay with backdrop blur
+ * - Personality-specific color themes and styling
+ * - Markdown rendering for rich text formatting
+ * - Interactive close functionality (ESC key, backdrop click, close button)
+ * - Responsive design for various screen sizes
+ * - Accessibility features for keyboard navigation
+ * 
+ * Personality Styling:
+ * - Optimist: Green gradient background with star emoji
+ * - Pessimist: Red gradient background with warning emoji
+ * - Realist: Gray gradient background with balance emoji
+ * - Default: Blue gradient for non-personality content
+ * 
+ * Interaction Methods:
+ * - ESC key to close overlay
+ * - Click on backdrop to close overlay
+ * - Click close button (✕) in header
+ * - Content area clicks are ignored (don't close overlay)
+ * 
+ * Dependencies:
+ * - React Markdown for text formatting
+ * - Zustand store for state management
+ * - Shared types for node data structures
+ * 
+ * @author Forum Development Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
 import { useGraphStore } from '../store/graphStore';
 import type { Node } from '../../../shared/types';
 
+/**
+ * Props interface for the ContentOverlay component.
+ * Defines the required data and callback functions for the overlay.
+ */
 interface ContentOverlayProps {
+  /** The node whose content should be displayed in the overlay */
   node: Node;
+  
+  /** Callback function to close the overlay */
   onClose: () => void;
 }
 
+/**
+ * Content overlay component for displaying detailed node content.
+ * 
+ * This component creates a full-screen modal overlay that displays the complete
+ * text content of a conversation node with personality-specific styling and
+ * Markdown formatting support.
+ * 
+ * Features:
+ * - Immersive full-screen experience with backdrop blur
+ * - Personality-themed color schemes and gradients
+ * - Rich text rendering through React Markdown
+ * - Multiple close interaction methods
+ * - Responsive design with scroll support
+ * - Accessibility considerations
+ * 
+ * Layout Structure:
+ * - Backdrop overlay with blur effect
+ * - Centered content container with personality styling
+ * - Header with emoji, title, and close button
+ * - Scrollable content area with Markdown rendering
+ * 
+ * @param {ContentOverlayProps} props - Component props
+ * @param {Node} props.node - The conversation node to display
+ * @param {() => void} props.onClose - Function to call when closing the overlay
+ * @returns {JSX.Element} The complete overlay interface
+ */
 export const ContentOverlay: React.FC<ContentOverlayProps> = ({ node, onClose }) => {
+  /**
+   * Determines the color scheme for the overlay based on the node's personality.
+   * 
+   * Returns appropriate colors for background gradients, borders, and text
+   * based on which AI personality generated the content.
+   * 
+   * @returns {Object} Color scheme object with background, border, and text colors
+   */
   const getPersonalityColors = () => {
     switch (node.persona) {
       case 'optimist':
@@ -40,6 +125,14 @@ export const ContentOverlay: React.FC<ContentOverlayProps> = ({ node, onClose })
 
   const colors = getPersonalityColors();
 
+  /**
+   * Returns the appropriate emoji for the personality type.
+   * 
+   * Provides visual personality indicators using emojis that match
+   * the personality characteristics and themes.
+   * 
+   * @returns {string} Emoji character representing the personality
+   */
   const getPersonalityEmoji = () => {
     switch (node.persona) {
       case 'optimist': return '🌟';
@@ -49,6 +142,14 @@ export const ContentOverlay: React.FC<ContentOverlayProps> = ({ node, onClose })
     }
   };
 
+  /**
+   * Handles click events on the overlay backdrop.
+   * 
+   * Closes the overlay when clicking on the background but prevents
+   * closing when clicking on the content area itself.
+   * 
+   * @param {React.MouseEvent} e - Mouse click event
+   */
   const handleOverlayClick = (e: React.MouseEvent) => {
     // Close overlay if clicking on the background (not the content)
     if (e.target === e.currentTarget) {
@@ -56,6 +157,13 @@ export const ContentOverlay: React.FC<ContentOverlayProps> = ({ node, onClose })
     }
   };
 
+  /**
+   * Handles keyboard events for overlay interactions.
+   * 
+   * Supports closing the overlay with the ESC key for keyboard accessibility.
+   * 
+   * @param {React.KeyboardEvent} e - Keyboard event
+   */
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Escape') {
       onClose();
