@@ -3,6 +3,26 @@ import { randomUUID } from "crypto";
 import { cache } from "react";
 import type { BrainstormResponseBody, NodeRecord, Session, SessionWithNodes } from "./types";
 
+type SessionRow = {
+  id: string;
+  title: string | null;
+  share_token: string;
+  is_public: boolean | null;
+  created_at: string;
+  created_by: string | null;
+};
+
+type NodeRow = {
+  id: string;
+  session_id: string;
+  parent_id: string | null;
+  persona: NodeRecord["persona"];
+  content: string;
+  x: number | null;
+  y: number | null;
+  created_at: string;
+};
+
 interface DatabaseAdapter {
   createSession(title: string): Promise<Session>;
   getSessionById(id: string): Promise<SessionWithNodes | null>;
@@ -194,7 +214,7 @@ function getSupabaseAdapter(): DatabaseAdapter | null {
   };
 }
 
-function normalizeSession(row: any): Session {
+function normalizeSession(row: SessionRow): Session {
   return {
     id: row.id,
     title: row.title,
@@ -205,7 +225,7 @@ function normalizeSession(row: any): Session {
   };
 }
 
-function normalizeNode(row: any): NodeRecord {
+function normalizeNode(row: NodeRow): NodeRecord {
   return {
     id: row.id,
     sessionId: row.session_id,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, type MouseEvent } from "react";
 import ReactFlow, {
   Background,
   Controls,
@@ -10,11 +10,11 @@ import ReactFlow, {
   type Edge,
   type Node
 } from "reactflow";
-import NodeRenderer from "./NodeRenderer";
+import NodeRenderer, { type PersonaNodeData } from "./NodeRenderer";
 import "reactflow/dist/style.css";
 
 interface GraphCanvasProps {
-  nodes: Node[];
+  nodes: Node<PersonaNodeData>[];
   edges: Edge[];
   onNodeSelect: (id: string) => void;
 }
@@ -29,11 +29,11 @@ function InnerCanvas({ nodes, edges, onNodeSelect }: GraphCanvasProps) {
   }, [nodes, instance]);
 
   return (
-    <ReactFlow
+    <ReactFlow<PersonaNodeData>
       nodes={nodes}
       edges={edges}
       nodeTypes={{ personaNode: NodeRenderer }}
-      onNodeClick={(_, node) => onNodeSelect(node.id)}
+      onNodeClick={(_event: MouseEvent, node: Node) => onNodeSelect(node.id)}
       proOptions={{ hideAttribution: true }}
       fitView
       minZoom={0.2}

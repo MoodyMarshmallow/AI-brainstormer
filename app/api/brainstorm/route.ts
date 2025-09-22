@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   let body: z.infer<typeof BrainstormSchema>;
   try {
     body = BrainstormSchema.parse(await request.json());
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Invalid payload" }, { status: 400 });
   }
 

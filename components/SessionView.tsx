@@ -6,6 +6,7 @@ import GraphCanvas from "./GraphCanvas";
 import PromptBar from "./PromptBar";
 import { mergePositions } from "@/lib/layout";
 import type { BrainstormResponseBody, NodeRecord, Session } from "@/lib/types";
+import type { PersonaNodeData } from "./NodeRenderer";
 
 interface SessionViewProps {
   session: Session;
@@ -36,7 +37,7 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
 
   const positioned = useMemo(() => mergePositions(visibleNodes), [visibleNodes]);
 
-  const flowNodes: Node[] = useMemo(
+  const flowNodes: Node<PersonaNodeData>[] = useMemo(
     () =>
       positioned.map((node) => ({
         id: node.id,

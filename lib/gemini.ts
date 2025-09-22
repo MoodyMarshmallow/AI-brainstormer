@@ -32,10 +32,15 @@ export async function generatePersonaReplies(
     )
   );
 
-  return results
-    .map((result, index) => ({ result, persona: entries[index][0] }))
-    .filter((entry) => entry.result.status === "fulfilled")
-    .map((entry) => ({ persona: entry.persona, content: entry.result.value }));
+  return results.reduce<Array<{ persona: Exclude<Persona, "user">; content: string }>>(
+    (acc, result, index) => {
+      if (result.status === "fulfilled") {
+        acc.push({ persona: entries[index][0], content: result.value });
+      }
+      return acc;
+    },
+    []
+  );
 }
 
 async function callGemini({
