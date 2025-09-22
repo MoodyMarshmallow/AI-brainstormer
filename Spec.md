@@ -1,7 +1,3 @@
-Below is a **concise, complete MVP spec sheet** for your multi‑agent brainstorming webapp, using **TypeScript**, **React Flow**, **Next.js** API routes, **Supabase (Postgres)**, and **Gemini**. It’s intentionally simple, production‑ish, and opinionated where it helps you ship.
-
----
-
 ## 0) TL;DR
 
 * **Goal:** Mind‑map brainstorming where each user prompt fans out to **Optimist / Pessimist / Realist** replies.
@@ -509,10 +505,3 @@ create index if not exists idx_nodes_session_created on nodes(session_id, create
 * Reloading the page shows the persisted tree.
 * Basic rate limiting works; excessive usage returns `429`.
 * No raw HTML is injected in the UI (sanitization evident).
-
----
-
-### Want me to follow up with:
-
-* A tiny **starter Next.js project skeleton** with the API routes and the React Flow canvas wired, **in TypeScript**?
-* Or the **exact zod‑validated route handlers** and a **`GraphCanvas.tsx`** stub to drop in?
