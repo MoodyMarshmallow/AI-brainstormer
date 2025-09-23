@@ -1,6 +1,6 @@
 import type { Persona } from "./types";
 
-const MODEL_NAME = process.env.MODEL_NAME ?? "gemini-1.5-pro";
+const MODEL_NAME = process.env.MODEL_NAME ?? "gemini-2.5-flash";
 const API_KEY = process.env.GEMINI_API_KEY;
 
 const personaPrompts: Record<Exclude<Persona, "user">, string> = {
