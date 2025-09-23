@@ -76,7 +76,7 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
           source: node.parentId!,
           target: node.id,
           animated: false,
-          style: { stroke: "#94a3b8", strokeWidth: 1.5 }
+          style: { stroke: "var(--grey-1)", strokeWidth: 1.5 }
         })),
     [positioned]
   );
@@ -120,10 +120,10 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
     });
 
   return (
-    <section className="flex flex-1 flex-col gap-4">
+    <section className="flex flex-1 flex-col gap-4 text-[var(--fg)]">
       <header className="flex flex-col gap-2">
-        <h1 className="text-2xl font-semibold">{session.title ?? "Untitled Session"}</h1>
-        <p className="text-sm text-slate-400">Share link: /s/{session.shareToken}</p>
+        <h1 className="text-2xl font-semibold text-[var(--fg)]">{session.title ?? "Untitled Session"}</h1>
+        <p className="text-sm text-[var(--grey-1)]">Share link: /s/{session.shareToken}</p>
       </header>
       <GraphCanvas
         nodes={flowNodes}
@@ -131,7 +131,7 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
         onNodeSelect={(id) => setSelectedNodeId(id)}
       />
       <PromptBar selectedNode={selectedNode} onSubmit={handleSubmit} loading={isPending} />
-      {error && <p className="text-sm text-red-400">{error}</p>}
+      {error && <p className="text-sm text-[var(--red)]">{error}</p>}
     </section>
   );
 }

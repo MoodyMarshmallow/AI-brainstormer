@@ -14,17 +14,17 @@ export function SessionSidebar({ sessions }: SessionSidebarProps) {
 
   if (sessions.length === 0) {
     return (
-      <aside className="hidden w-64 shrink-0 flex-col rounded-xl border border-slate-800 bg-slate-900/60 p-4 md:flex">
-        <h2 className="text-sm font-semibold uppercase text-slate-300">Sessions</h2>
-        <p className="mt-4 text-sm text-slate-500">Start a brainstorm to see it here.</p>
+      <aside className="hidden w-64 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-1)] p-4 md:flex">
+        <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
+        <p className="mt-4 text-sm text-[var(--grey-1)]">Start a brainstorm to see it here.</p>
       </aside>
     );
   }
 
   return (
-    <aside className="hidden w-72 shrink-0 flex-col rounded-xl border border-slate-800 bg-slate-900/60 p-4 md:flex">
-      <h2 className="text-sm font-semibold uppercase text-slate-300">Sessions</h2>
-      <nav className="mt-3 space-y-1 overflow-y-auto pr-1 text-sm">
+    <aside className="hidden w-72 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-1)] p-4 md:flex">
+      <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
+      <nav className="mt-3 space-y-1 overflow-y-auto pr-1 text-sm text-[var(--fg)]">
         {sessions.map((session) => (
           <SessionListItem
             key={session.id}
@@ -64,14 +64,14 @@ function SessionListItem({ session, active }: SessionListItemProps) {
   return (
     <Link
       href={`/s/${session.shareToken}`}
-      className={`group flex items-center justify-between rounded-lg px-3 py-2 transition hover:bg-slate-800/70 ${
-        active ? 'bg-slate-800/80 text-slate-50' : 'text-slate-300'
+      className={`group flex items-center justify-between rounded-lg px-3 py-2 transition hover:bg-[var(--bg-4)] ${
+        active ? 'bg-[var(--bg-visual)] text-[var(--fg)] font-semibold' : 'text-[var(--fg)]'
       }`}
       prefetch={false}
     >
       <div className="flex min-w-0 flex-col">
         <span className="truncate font-medium">{session.title ?? 'Untitled session'}</span>
-        <span className="text-xs text-slate-500">
+        <span className="text-xs text-[var(--grey-1)]">
           {new Date(session.createdAt).toLocaleString()}
         </span>
       </div>
@@ -79,7 +79,7 @@ function SessionListItem({ session, active }: SessionListItemProps) {
         type="button"
         onClick={handleDelete}
         aria-label="Delete session"
-        className="ml-2 hidden rounded p-1 text-slate-400 transition hover:bg-slate-700 hover:text-red-400 group-hover:flex"
+        className="ml-2 hidden rounded p-1 text-[var(--grey-1)] transition hover:bg-[var(--bg-3)] hover:text-[var(--red)] group-hover:flex"
         disabled={pending}
       >
         <TrashIcon className="h-4 w-4" />

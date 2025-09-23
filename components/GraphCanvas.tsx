@@ -39,7 +39,7 @@ function InnerCanvas({ nodes, edges, onNodeSelect }: GraphCanvasProps) {
       minZoom={0.2}
       maxZoom={1.5}
     >
-      <Background color="#2dd4bf" gap={32} />
+      <Background color="var(--grey-1)" gap={32} />
       <MiniMap pannable zoomable />
       <Controls />
     </ReactFlow>
@@ -49,7 +49,7 @@ function InnerCanvas({ nodes, edges, onNodeSelect }: GraphCanvasProps) {
 export function GraphCanvas(props: GraphCanvasProps) {
   return (
     <ReactFlowProvider>
-      <div className="h-[70vh] w-full overflow-hidden rounded-xl border border-slate-700 bg-slate-900">
+      <div className="h-[70vh] w-full overflow-hidden rounded-xl border border-[var(--bg-4)] bg-[var(--bg-0)]">
         <InnerCanvas {...props} />
       </div>
     </ReactFlowProvider>

@@ -13,26 +13,48 @@ export interface PersonaNodeData {
   onSelect: (id: string) => void;
 }
 
-const personaColors: Record<Persona, string> = {
-  user: "bg-slate-800 border-slate-600",
-  optimist: "bg-emerald-900 border-emerald-500",
-  pessimist: "bg-rose-900 border-rose-500",
-  realist: "bg-blue-900 border-blue-500"
+const personaStyles: Record<Persona | "user", { background: string; borderColor: string; labelColor?: string }> = {
+  user: {
+    background: "var(--bg-blue)",
+    borderColor: "var(--blue)",
+  },
+  optimist: {
+    background: "var(--bg-green)",
+    borderColor: "var(--green)",
+  },
+  pessimist: {
+    background: "var(--bg-red)",
+    borderColor: "var(--red)",
+  },
+  realist: {
+    background: "var(--bg-visual)",
+    borderColor: "var(--grey-2)",
+    labelColor: "var(--grey-2)",
+  },
 };
 
 export function NodeRenderer({ data }: NodeProps<PersonaNodeData>) {
   const safeHtml = sanitizeContent(data.content);
-  const classes = personaColors[data.persona] ?? personaColors.user;
+  const style = personaStyles[data.persona] ?? personaStyles.user;
+
   return (
     <div
-      className={`w-64 rounded-lg border px-3 py-2 text-sm shadow-lg transition hover:border-white ${classes}`}
+      className="w-64 rounded-lg border px-3 py-2 text-sm shadow-sm transition hover:shadow-md"
+      style={{
+        background: style.background,
+        borderColor: style.borderColor,
+        color: "var(--fg)",
+      }}
       onClick={() => data.onSelect(data.id)}
     >
-      <div className="mb-2 flex items-center justify-between text-xs uppercase tracking-wide text-slate-200">
+      <div
+        className="mb-2 flex items-center justify-between text-xs uppercase tracking-wide"
+        style={{ color: style.labelColor ?? "var(--fg)" }}
+      >
         <span>{data.persona}</span>
         <button
           type="button"
-          className="rounded bg-slate-900 px-2 py-1 text-[10px] uppercase"
+          className="rounded bg-[var(--bg-4)] px-2 py-1 text-[10px] font-semibold uppercase text-[var(--fg)] transition hover:bg-[var(--bg-3)]"
           onClick={(event) => {
             event.stopPropagation();
             data.onToggleCollapse(data.id);
@@ -41,7 +63,10 @@ export function NodeRenderer({ data }: NodeProps<PersonaNodeData>) {
           {data.collapsed ? "Expand" : "Collapse"}
         </button>
       </div>
-      <div className="prose prose-invert max-w-none text-slate-100" dangerouslySetInnerHTML={{ __html: safeHtml }} />
+      <div
+        className="prose max-w-none text-[var(--fg)]"
+        dangerouslySetInnerHTML={{ __html: safeHtml }}
+      />
     </div>
   );
 }

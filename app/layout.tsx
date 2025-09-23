@@ -19,10 +19,10 @@ export default async function RootLayout({
 
   return (
     <html lang="en">
-      <body className="min-h-screen bg-slate-950 text-slate-100">
+      <body className="min-h-screen bg-[var(--bg-0)] text-[var(--fg)]">
         <div className="mx-auto flex min-h-screen w-full max-w-7xl gap-4 p-4 md:gap-6">
           <SessionSidebar sessions={sessions} />
-          <div className="flex-1 overflow-hidden rounded-xl border border-slate-800 bg-slate-900/40 p-2 md:p-4">
+          <div className="flex-1 overflow-hidden rounded-xl border border-[var(--bg-4)] bg-[var(--bg-1)] p-2 md:p-4">
             {children}
           </div>
         </div>

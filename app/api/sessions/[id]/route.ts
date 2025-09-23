@@ -1,12 +1,13 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { deleteSession } from "@/lib/db";
 
 export async function DELETE(
-  _request: Request,
-  { params }: { params: { id: string } }
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    await deleteSession(params.id);
+    const { id } = await params;
+    await deleteSession(id);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("Failed to delete session", error);
