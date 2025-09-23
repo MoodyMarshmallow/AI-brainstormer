@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  /* Backgrounds */
+  --bg-dim: #f2efdf;
+  --bg-0: #fffbef;
+  --bg-1: #f8f5e4;
+  --bg-2: #f2efdf;
+  --bg-3: #edeada;
+  --bg-4: #e8e5d5;
+  --bg-5: #bec5b2;
+
+  /* Tinted background variants */
+  --bg-red: #ffe7de;
+  --bg-yellow: #fef2d5;
+  --bg-green: #f3f5d9;
+  --bg-blue: #ecf5ed;
+  --bg-purple: #fceced;
+  --bg-visual: #f0f2d4;
+
+  /* Foreground / primary text */
+  --fg: #5c6a72;
+
+  /* Accent / semantic colors */
+  --red: #f85552;
+  --yellow: #dfa000;
+  --green: #8da101;
+  --blue: #3a94c5;
+  --purple: #df69ba;
+  --aqua: #35a77c;
+  --orange: #f57d26;
+
+  /* Greys & statuslines */
+  --grey-0: #a6b0a0;
+  --grey-1: #939f91;
+  --grey-2: #829181;
+  --statusline-1: #93b259;
+  --statusline-2: #708089;
+  --statusline-3: #e66868;
+}
+
+body {
+  margin: 0;
+  font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: var(--bg-0);
+  color: var(--fg);
+}
+
+.header {
+  background: var(--bg-dim);
+  border-bottom: 1px solid var(--grey-1);
+}
+
+.btn-primary {
+  background: var(--blue);
+  color: white;
+}
+
+.badge-error {
+  background: var(--statusline-3);
+  color: white;
+}

@@ -1,10 +1,25 @@
-# AI Brainstorming Chatbot
+# AI Brainstormer
 
-This is a web application that uses the Gemini API to help users brainstorm ideas.
+Mind-map brainstorming MVP built with Next.js, React Flow, Supabase and Gemini personas.
 
 ## Getting Started
 
-1. Clone the repository.
-2. Install dependencies with `npm install`.
-3. Create a `.env` file and add your Gemini API key.
-4. Run the development server with `npm run dev`.
+1. Copy `.env.local.example` to `.env.local` and set Supabase and Gemini credentials.
+2. Install dependencies and run the dev server:
+
+```bash
+npm install
+npm run dev
+```
+
+3. Create the database tables using the SQL in `Spec.md`.
+
+Visit `http://localhost:3000` to create a brainstorming session.
+
+## Testing
+
+```bash
+npm test
+```
+
+Vitest covers layout and rate limiting helpers.
