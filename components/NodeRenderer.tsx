@@ -4,7 +4,7 @@ import type { NodeProps } from "reactflow";
 import { sanitizeContent } from "@/lib/sanitize";
 import type { Persona } from "@/lib/types";
 
-interface PersonaNodeData {
+export interface PersonaNodeData {
   id: string;
   content: string;
   persona: Persona;

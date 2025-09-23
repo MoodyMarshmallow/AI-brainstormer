@@ -14,7 +14,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ session });
   } catch (error) {
     console.error("Failed to create session", error);
-    return NextResponse.json({ error: "Failed to create session" }, { status: 400 });
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request", details: error.issues },
+        { status: 400 }
+      );
+    }
+
+    const message =
+      error && typeof error === "object" && "message" in error
+        ? String((error as Error).message)
+        : "Failed to create session";
+
+    return NextResponse.json(
+      { error: "Failed to create session", message },
+      { status: 500 }
+    );
   }
 }
 

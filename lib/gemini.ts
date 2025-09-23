@@ -32,15 +32,32 @@ export async function generatePersonaReplies(
     )
   );
 
-  return results.reduce<Array<{ persona: Exclude<Persona, "user">; content: string }>>(
-    (acc, result, index) => {
-      if (result.status === "fulfilled") {
-        acc.push({ persona: entries[index][0], content: result.value });
-      }
-      return acc;
-    },
-    []
-  );
+  const replies = results.map((result, index) => {
+    const persona = entries[index][0];
+
+    if (result.status === "fulfilled" && result.value.trim().length > 0) {
+      return { persona, content: result.value };
+    }
+
+    const reason =
+      result.status === "fulfilled"
+        ? "empty response"
+        : result.reason instanceof Error
+          ? result.reason.message
+          : String(result.reason ?? "unknown error");
+
+    console.warn(
+      "Gemini reply unavailable, using fallback",
+      JSON.stringify({ persona, reason }, null, 2)
+    );
+
+    return {
+      persona,
+      content: `${capitalize(persona)} thinks: ${prompt.slice(0, 80)}...`
+    };
+  });
+
+  return replies;
 }
 
 async function callGemini({
