@@ -1,10 +1,10 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { Edge, Node } from "reactflow";
 import GraphCanvas from "./GraphCanvas";
 import PromptBar from "./PromptBar";
-import { mergePositions } from "@/lib/layout";
+import { mergePositions, type PositionedNode } from "@/lib/layout";
 import type { BrainstormResponseBody, NodeRecord, Session } from "@/lib/types";
 import type { PersonaNodeData } from "./NodeRenderer";
 
@@ -15,7 +15,12 @@ interface SessionViewProps {
 
 export function SessionView({ session, initialNodes }: SessionViewProps) {
   const [nodes, setNodes] = useState<NodeRecord[]>(initialNodes);
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [positioned, setPositioned] = useState<PositionedNode[]>(() =>
+    initialNodes.map((node) => ({
+      ...node,
+      position: { x: node.x ?? 0, y: node.y ?? 0 }
+    }))
+  );
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(
     initialNodes.find((node) => node.persona === "user")?.id ?? null
   );
@@ -24,48 +29,50 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
 
   const nodeMap = useMemo(() => new Map(nodes.map((node) => [node.id, node])), [nodes]);
 
-  const visibleNodes = useMemo(() => {
-    const hasCollapsedAncestor = (node: NodeRecord | undefined): boolean => {
-      if (!node || !node.parentId) return false;
-      if (collapsed.has(node.parentId)) return true;
-      const parent = nodeMap.get(node.parentId);
-      return hasCollapsedAncestor(parent);
+  useEffect(() => {
+    let cancelled = false;
+
+    mergePositions(nodes)
+      .then((layout) => {
+        if (!cancelled) {
+          setPositioned(layout);
+        }
+      })
+      .catch((layoutError) => {
+        console.error("Failed to layout nodes", layoutError);
+        if (!cancelled) {
+          setPositioned(
+            nodes.map((node) => ({
+              ...node,
+              position: { x: node.x ?? 0, y: node.y ?? 0 }
+            }))
+          );
+        }
+      });
+
+    return () => {
+      cancelled = true;
     };
-
-    return nodes.filter((node) => !hasCollapsedAncestor(node));
-  }, [nodes, collapsed, nodeMap]);
-
-  const positioned = useMemo(() => mergePositions(visibleNodes), [visibleNodes]);
+  }, [nodes]);
 
   const flowNodes: Node<PersonaNodeData>[] = useMemo(
     () =>
       positioned.map((node) => ({
         id: node.id,
         position: node.position,
-        data: {
-          id: node.id,
-          content: node.content,
-         persona: node.persona,
-         collapsed: collapsed.has(node.id),
-          hasIncoming: Boolean(node.parentId),
-          onToggleCollapse: (id: string) =>
-            setCollapsed((prev) => {
-              const next = new Set(prev);
-              if (next.has(id)) {
-                next.delete(id);
-              } else {
-                next.add(id);
-              }
-              return next;
-            }),
-          onSelect: (id: string) => setSelectedNodeId(id)
-        },
+          data: {
+            id: node.id,
+            content: node.content,
+            persona: node.persona,
+            hasIncoming: Boolean(node.parentId),
+            onSelect: (id: string) => setSelectedNodeId(id)
+          },
         type: "personaNode",
         draggable: false,
         selectable: true,
         selected: selectedNodeId === node.id
       })),
-    [positioned, collapsed, selectedNodeId]
+    [positioned, selectedNodeId]
   );
 
   const flowEdges: Edge[] = useMemo(
@@ -136,7 +143,7 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
         edges={flowEdges}
         onNodeSelect={(id) => setSelectedNodeId(id)}
       />
-      <PromptBar selectedNode={selectedNode} onSubmit={handleSubmit} loading={isPending} />
+      <PromptBar onSubmit={handleSubmit} loading={isPending} />
       {error && <p className="text-sm text-[var(--red)]">{error}</p>}
     </section>
   );

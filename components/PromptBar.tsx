@@ -1,15 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { NodeRecord } from "@/lib/types";
-
 interface PromptBarProps {
-  selectedNode: NodeRecord | null;
   onSubmit: (prompt: string) => Promise<void>;
   loading: boolean;
 }
 
-export function PromptBar({ selectedNode, onSubmit, loading }: PromptBarProps) {
+export function PromptBar({ onSubmit, loading }: PromptBarProps) {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState<string | null>(null);
 

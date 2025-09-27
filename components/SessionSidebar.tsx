@@ -14,7 +14,7 @@ export function SessionSidebar({ sessions }: SessionSidebarProps) {
 
   if (sessions.length === 0) {
     return (
-      <aside className="hidden w-64 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-1)] p-4 md:flex">
+      <aside className="hidden w-64 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-3)] p-4 md:flex">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
           <Link
@@ -32,7 +32,7 @@ export function SessionSidebar({ sessions }: SessionSidebarProps) {
   }
 
   return (
-    <aside className="hidden w-72 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-1)] p-4 md:flex">
+    <aside className="hidden w-72 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-2)] p-4 md:flex">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
         <Link
@@ -85,7 +85,7 @@ function SessionListItem({ session, active }: SessionListItemProps) {
     <Link
       href={`/s/${session.shareToken}`}
       className={`group flex items-center justify-between rounded-lg px-3 py-2 transition hover:bg-[var(--bg-4)] ${
-        active ? 'bg-[var(--bg-visual)] text-[var(--fg)] font-semibold' : 'text-[var(--fg)]'
+        active ? 'bg-[var(--bg-0)] text-[var(--fg)] font-semibold' : 'text-[var(--fg)]'
       }`}
       prefetch={false}
     >

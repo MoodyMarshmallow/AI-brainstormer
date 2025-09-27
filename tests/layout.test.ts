@@ -14,7 +14,7 @@ const baseNode = (overrides: Partial<NodeRecord>): NodeRecord => ({
 });
 
 describe("computeTreeLayout", () => {
-  it("places nodes per depth", () => {
+  it("places nodes per depth", async () => {
     const createdAt = new Date().toISOString();
     const nodes: NodeRecord[] = [
       baseNode({ id: "root", createdAt }),
@@ -23,7 +23,7 @@ describe("computeTreeLayout", () => {
       baseNode({ id: "grandchild", parentId: "child1", createdAt })
     ];
 
-    const layout = computeTreeLayout(nodes);
+    const layout = await computeTreeLayout(nodes);
     expect(layout.root.y).toBe(0);
     expect(layout.child1.y).toBeGreaterThan(layout.root.y);
     expect(layout.child1.x).not.toBe(layout.child2.x);

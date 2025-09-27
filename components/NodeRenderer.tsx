@@ -8,8 +8,6 @@ export interface PersonaNodeData {
   id: string;
   content: string;
   persona: Persona;
-  collapsed: boolean;
-  onToggleCollapse: (id: string) => void;
   onSelect: (id: string) => void;
   hasIncoming: boolean;
 }
@@ -27,26 +25,26 @@ const personaStyles: Record<
   user: {
     idleBackground: "var(--blue-1)",
     activeBackground: "var(--blue-2)",
-    idleBorder: "var(--blue-1)",
-    activeBorder: "var(--blue-2)"
+    idleBorder: "var(--blue-3)",
+    activeBorder: "var(--blue-4)"
   },
   optimist: {
     idleBackground: "var(--green-1)",
     activeBackground: "var(--green-2)",
-    idleBorder: "var(--green-1)",
-    activeBorder: "var(--green-2)"
+    idleBorder: "var(--green-3)",
+    activeBorder: "var(--green-4)"
   },
   pessimist: {
     idleBackground: "var(--red-1)",
     activeBackground: "var(--red-2)",
-    idleBorder: "var(--red-1)",
-    activeBorder: "var(--red-2)"
+    idleBorder: "var(--red-3)",
+    activeBorder: "var(--red-4)"
   },
   realist: {
     idleBackground: "var(--yellow-1)",
     activeBackground: "var(--yellow-2)",
-    idleBorder: "var(--yellow-1)",
-    activeBorder: "var(--yellow-2)"
+    idleBorder: "var(--yellow-3)",
+    activeBorder: "var(--yellow-4)"
   },
 };
 
@@ -86,17 +84,6 @@ export function NodeRenderer({ data, selected }: NodeProps<PersonaNodeData>) {
         style={{ color: labelColor }}
       >
         <span>{data.persona}</span>
-        <button
-          type="button"
-          className="rounded bg-[var(--bg-4)] px-2 py-1 text-[10px] font-semibold uppercase transition hover:bg-[var(--bg-3)]"
-          style={{ color: labelColor }}
-          onClick={(event) => {
-            event.stopPropagation();
-            data.onToggleCollapse(data.id);
-          }}
-        >
-          {data.collapsed ? "Expand" : "Collapse"}
-        </button>
       </div>
       <div
         className="prose max-w-none text-[var(--fg)]"
