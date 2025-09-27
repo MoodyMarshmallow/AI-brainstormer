@@ -55,7 +55,7 @@ export default function HomePage() {
         <button
           type="submit"
           disabled={loading}
-          className="rounded-md bg-[var(--blue)] p-3 text-base font-semibold text-white disabled:opacity-60"
+          className="rounded-md bg-[var(--blue-4)] p-3 text-base font-semibold text-white disabled:opacity-60"
         >
           {loading ? "Creating..." : "Create Brainstorm"}
         </button>

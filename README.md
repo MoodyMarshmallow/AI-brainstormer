@@ -34,7 +34,9 @@ Mind-map brainstorming MVP built with **Next.js 15**, **React Flow**, **Supabase
 ```bash
 npm run lint   # ESLint (flat config)
 npm run test   # Vitest suites (layout, rate limit, db helpers)
+npm run e2e    # Playwright end-to-end smoke flow
 ```
 
 CI expects both commands to pass before merging. Add or update tests when modifying lib helpers or API handlers.
 
+> `npm run e2e` starts the dev server automatically. Set `PLAYWRIGHT_SKIP_WEB_SERVER=1` if you prefer to run `npm run dev` in another terminal first.

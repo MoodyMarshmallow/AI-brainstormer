@@ -30,16 +30,6 @@ export function PromptBar({ selectedNode, onSubmit, loading }: PromptBarProps) {
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 flex w-full flex-col gap-3">
-      <div className="flex items-center justify-between text-sm text-[var(--grey-2)]">
-        <span>
-          {selectedNode
-            ? `Adding ideas under ${selectedNode.persona} node`
-            : "Starting from the root"}
-        </span>
-        {selectedNode && (
-          <span className="text-xs text-[var(--grey-1)]">Node ID: {selectedNode.id}</span>
-        )}
-      </div>
       <textarea
         value={prompt}
         onChange={(event) => setPrompt(event.target.value)}
@@ -51,7 +41,7 @@ export function PromptBar({ selectedNode, onSubmit, loading }: PromptBarProps) {
       <button
         type="submit"
         disabled={loading}
-        className="self-end rounded-md bg-[var(--blue)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
+        className="self-end rounded-md bg-[var(--blue-4)] px-4 py-2 text-sm font-semibold text-white disabled:opacity-60"
       >
         {loading ? "Thinking..." : "Brainstorm"}
       </button>

@@ -1,32 +1,37 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-- `app/` contains the app router. Key routes include `app/page.tsx` (session creation UI), `app/api/*` (server actions + REST handlers), and `app/s/[shareToken]` (shared brainstorm view).
-- `components/` holds reusable client components such as `GraphCanvas.tsx`, `SessionView.tsx`, and prompt controls. Treat files here as pure UI and inject data via props.
-- `lib/` groups back-end utilities: Supabase access (`db.ts`), Gemini calls (`gemini.ts`), rate limiting, layout helpers, and sanitization. Shared types live under `types/`.
-- `tests/` stores Vitest specs. Styling assets are in `app/globals.css` and `tailwind.config.ts`.
+- `app/` holds Next.js App Router entries and API routes (`/api/session`, `/api/brainstorm`).
+- `components/` contains interactive UI pieces such as `SessionView`, `GraphCanvas`, and `PromptBar`.
+- `lib/` stores server utilities (`db.ts`, `gemini.ts`, `sanitize.ts`) and shared domain types in `types.ts`.
+- `tests/` houses Vitest specs; mirror the source directory when adding new tests.
+- Key config files live at the repo root (`tsconfig.json`, `eslint.config.mts`, `tailwind.config.ts`, `SUPABASE_SETUP.md`).
 
 ## Build, Test, and Development Commands
-- `npm run dev` — start the Next.js dev server (Turbopack) at `http://localhost:3000`.
-- `npm run build` — produce the production bundle. Run `npm run start` afterwards to smoke-test the output.
-- `npm run lint` — execute ESLint using the flat config (`eslint.config.mts`). Resolve all errors before committing.
-- `npm run test` — run the Vitest suite once; `npx vitest --watch` is handy while iterating on `lib/` helpers.
+- `npm run dev` — start the Next.js dev server with hot reload.
+- `npm run build` — generate the production bundle.
+- `npm run start` — serve the last build locally.
+- `npm run lint` — execute ESLint using the flat config (`eslint.config.mts`).
+- `npm test` — run all Vitest suites.
+- `npx tsc --noEmit` — perform a standalone type-check pass.
 
 ## Coding Style & Naming Conventions
-- TypeScript is required. Maintain 2-space indentation, trailing commas, and `PascalCase` component filenames. Hooks and utilities stay `camelCase`.
-- Keep Tailwind classes inline in JSX, ordering layout → spacing → color utilities for readability.
-- ESLint (TypeScript + React) is the source of truth; avoid disabling rules unless you document the rationale inline.
+- Use TypeScript, functional React components, and hooks-first patterns.
+- Keep 2-space indentation and rely on Tailwind utility classes for styling.
+- Component files use `PascalCase`, utility modules use `camelCase`, and route folders follow Next.js conventions.
+- Run `npm run lint` before committing; it enforces the shared ESLint ruleset.
 
 ## Testing Guidelines
-- Name tests `*.test.ts` in `tests/` and mirror the directory of the code under test when practical.
-- Use Vitest mocks (`vi.mock`, `vi.spyOn`) to isolate Supabase, Gemini, and timer behaviour. Prefer fast unit tests over slow integration runs.
-- Add or update tests whenever you touch `lib/` or API routes; CI must pass `npm run test` without `--runInBand` tweaks.
+- Tests live under `tests/` and should mirror feature names (e.g., `tests/rateLimit.test.ts`).
+- Use Vitest’s `describe/it` syntax and prefer `expect` assertions.
+- Add regression tests for new API routes or Gemini adapters; run `npm test` locally before pushing.
 
 ## Commit & Pull Request Guidelines
-- Write imperative commit subjects, e.g., `Add sidebar session list`. Group related changes into a single commit.
-- Before pushing, run `npm run lint && npm run test`. Mention any intentionally skipped checks in the PR description.
-- PRs should link issues, describe behaviour changes, and include screenshots or short clips for UI updates. Note migrations or Supabase schema edits explicitly.
+- Follow conventional, present-tense commit messages (`feat: add session sidebar`, `fix: handle gemini fallback`).
+- Ensure commits lint and type-check cleanly; include Supabase schema changes in `SUPABASE_SETUP.md` when relevant.
+- Pull requests should describe the change, reference related issues, and attach screenshots or console logs for UI updates.
+- Request reviews early for large features and note any follow-up tasks.
 
-## Configuration & Security Notes
-- Copy `.env.local.example` to `.env.local`, then set `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GEMINI_API_KEY`, and related settings. Never commit secrets.
-- Follow `SUPABASE_SETUP.md` when adjusting database structure. Document schema diffs and backfill steps in your PR to keep reviewers aligned.
+## Security & Configuration Tips
+- Never expose `SUPABASE_SERVICE_ROLE_KEY` or `GEMINI_API_KEY` to client components; keep them server-side in `.env.local`.
+- Update `SUPABASE_SETUP.md` after schema changes so teammates can sync quickly.

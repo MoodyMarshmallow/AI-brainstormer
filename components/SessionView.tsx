@@ -45,8 +45,9 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
         data: {
           id: node.id,
           content: node.content,
-          persona: node.persona,
-          collapsed: collapsed.has(node.id),
+         persona: node.persona,
+         collapsed: collapsed.has(node.id),
+          hasIncoming: Boolean(node.parentId),
           onToggleCollapse: (id: string) =>
             setCollapsed((prev) => {
               const next = new Set(prev);
@@ -75,8 +76,13 @@ export function SessionView({ session, initialNodes }: SessionViewProps) {
           id: `${node.parentId}-${node.id}`,
           source: node.parentId!,
           target: node.id,
+          type: "smoothstep",
           animated: false,
-          style: { stroke: "var(--grey-1)", strokeWidth: 1.5 }
+          style: {
+            stroke: "var(--grey-2)",
+            strokeWidth: 1.5,
+            strokeDasharray: "4 4"
+          }
         })),
     [positioned]
   );

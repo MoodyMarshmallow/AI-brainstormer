@@ -15,7 +15,17 @@ export function SessionSidebar({ sessions }: SessionSidebarProps) {
   if (sessions.length === 0) {
     return (
       <aside className="hidden w-64 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-1)] p-4 md:flex">
-        <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
+          <Link
+            href="/"
+            aria-label="Create new brainstorm"
+            className="rounded p-1 text-[var(--grey-2)] transition hover:bg-[var(--bg-3)] hover:text-[var(--fg)]"
+            prefetch={false}
+          >
+            <PlusIcon className="h-4 w-4" />
+          </Link>
+        </div>
         <p className="mt-4 text-sm text-[var(--grey-1)]">Start a brainstorm to see it here.</p>
       </aside>
     );
@@ -23,7 +33,17 @@ export function SessionSidebar({ sessions }: SessionSidebarProps) {
 
   return (
     <aside className="hidden w-72 shrink-0 flex-col rounded-xl border border-[var(--bg-4)] bg-[var(--bg-1)] p-4 md:flex">
-      <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
+      <div className="flex items-center justify-between">
+        <h2 className="text-sm font-semibold uppercase text-[var(--grey-2)]">Sessions</h2>
+        <Link
+          href="/"
+          aria-label="Create new brainstorm"
+          className="rounded p-1 text-[var(--grey-2)] transition hover:bg-[var(--bg-3)] hover:text-[var(--fg)]"
+          prefetch={false}
+        >
+          <PlusIcon className="h-4 w-4" />
+        </Link>
+      </div>
       <nav className="mt-3 space-y-1 overflow-y-auto pr-1 text-sm text-[var(--fg)]">
         {sessions.map((session) => (
           <SessionListItem
@@ -105,6 +125,15 @@ function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
       <path d="M10 11v5" />
       <path d="M14 11v5" />
       <path d="M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14" />
+    </svg>
+  );
+}
+
+function PlusIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.7} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" {...props}>
+      <path d="M12 5v14" />
+      <path d="M5 12h14" />
     </svg>
   );
 }

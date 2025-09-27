@@ -32,6 +32,22 @@ declare module "reactflow" {
     data?: TData;
   };
 
+  export type Position = "top" | "right" | "bottom" | "left";
+  export const Position: {
+    Top: Position;
+    Right: Position;
+    Bottom: Position;
+    Left: Position;
+  };
+
+  export interface HandleProps {
+    id?: string;
+    type: "source" | "target";
+    position: Position;
+    isConnectable?: boolean;
+    style?: Record<string, unknown>;
+  }
+
   export interface ReactFlowInstance {
     fitView(options?: { padding?: number; duration?: number }): void;
   }
@@ -57,4 +73,5 @@ declare module "reactflow" {
   export const MiniMap: ComponentType<Record<string, unknown>>;
   export const ReactFlowProvider: ComponentType<{ children?: ReactNode }>;
   export function useReactFlow(): ReactFlowInstance;
+  export const Handle: ComponentType<HandleProps>;
 }
